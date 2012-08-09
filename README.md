@@ -1,4 +1,4 @@
 rcb-pfa-forwarding
 ==================
 
-Forwarding plugin for Roundc ube, Postfixadmin compatible
+Forwarding plugin for Roundcube, Postfixadmin compatible
