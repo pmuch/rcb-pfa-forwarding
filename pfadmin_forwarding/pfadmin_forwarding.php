@@ -11,6 +11,11 @@
  *
  * Requirements: Postfixadmin
  *
+ * 
+ * Changelog
+ *
+ * 2.0 - 2012.10.29 - Larry skin compatible
+ * 1.0 - 2009.07.31 - Initial Release
  **/
  
 /** USAGE
@@ -52,11 +57,12 @@ class pfadmin_forwarding extends rcube_plugin
    
   function pfadmin_forwarding_init()
   {
-
     $this->add_texts('localization/');
+    $this->register_handler('plugin.body', array($this, 'pfadmin_forwarding_form'));
+
     $rcmail = rcmail::get_instance();
     $rcmail->output->set_pagetitle($this->gettext('forwarding')); 
-    $rcmail->output->send('pfadmin_forwarding.pfadmin_forwarding');
+    $rcmail->output->send('plugin');
     
   }
   
@@ -127,35 +133,41 @@ class pfadmin_forwarding extends rcube_plugin
     $attrib_str = create_attrib_string($attrib, array('style', 'class', 'id', 'cellpadding', 'cellspacing', 'border', 'summary'));
 
     // return the complete edit form as table
-    $out .= '<fieldset><legend>' . $this->gettext('forwarding') . ' ::: ' . $rcmail->user->data['username'] . '</legend>' . "\n";
-    $out .= '<br />' . "\n";
-    $out .= '<table' . $attrib_str . ">\n\n";
-
-    // show autoresponder properties  
-                
+    //
+    //
+    $table = new html_table(array('cols' => 2));
     $field_id = 'forwardingaddress';
     $input_forwardingaddress = new html_textarea(array('name' => '_forwardingaddress', 'id' => $field_id, 'value' => $address, 'cols' => 60, 'rows' => 5));
+    
+    $table->add('title', html::label($field_id, rep_specialchars_output($this->gettext('forwardingaddress'))));
+    $table->add(null, $input_forwardingaddress->show($enabled));
 
-    $out .= sprintf("<tr><td class=\"title\"><label for=\"%s\">%s</label>:</td><td>%s</td></tr>\n",
-                $field_id,
-                rep_specialchars_output($this->gettext('forwardingaddress')),
-                $input_forwardingaddress->show($date));
-                
+
     $field_id = 'keepcopies';
     $input_keepcopies = new html_checkbox(array('name' => '_keepcopies', 'id' => $field_id, 'value' => 1));
 
-    $out .= sprintf("<tr><td class=\"title\"><label for=\"%s\">%s</label>:</td><td>%s</td></tr>\n",
-                $field_id,
-                rep_specialchars_output($this->gettext('keepcopies')),
-                $input_keepcopies->show($keepcopies?1:0));                                                
-
-    $out .= "\n</table>";
-    $out .= '<br />' . "\n";
-    $out .= "</fieldset>\n";    
-
+    $table->add('title', html::label($field_id, rep_specialchars_output($this->gettext('keepcopies'))));
+    $table->add(null, $input_keepcopies->show($keepcopies));
+    $out = html::div(array('class' => 'box'),
+	html::div(array('id' => 'prefs-title', 'class' => 'boxtitle'), $this->gettext('forwarding')) .
+	html::div(array('class' => 'boxcontent'), $table->show() .
+	html::p(null,
+		$rcmail->output->button(array(
+			'command' => 'plugin.pfadmin_forwarding-save',
+			'type' => 'input',
+			'class' => 'button mainaction',
+			'label' => 'save'
+    	)))));
+   
     $rcmail->output->add_gui_object('forwardingform', 'forwarding-form');
     
-    return $out;
+    return $rcmail->output->form_tag(array(
+    	'id' => 'forwardingform',
+	'name' => 'forwardingform',
+	'method' => 'post',
+	'action' => './?_task=settings&_action=plugin.pfadmin_forwarding-save',
+    ), $out);
+
   }
  
   private function _get()
