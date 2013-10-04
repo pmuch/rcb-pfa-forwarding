@@ -97,7 +97,11 @@ class pfadmin_forwarding extends rcube_plugin
 
       if (!$rcmail->config->get('db_persistent')) {
         if ($dsn = $rcmail->config->get('db_dsnw')) {
-          $rcmail->db = new rcube_mdb2($dsn, '', FALSE);    
+          if (!class_exists('rcube_db')) {
+               $rcmail->db = new rcube_mdb2($dsn, '', FALSE);    
+           } else {
+               $rcmail->db = rcube_db::factory($dsn, '', FALSE);    
+           }
         }
       }
     $this->pfadmin_forwarding_init();
@@ -177,7 +181,12 @@ class pfadmin_forwarding extends rcube_plugin
     $sql = $this->sql_select;
 
     if ($dsn = $rcmail->config->get('db_pfadmin_forwarding_dsn')) {
-      $db = new rcube_mdb2($dsn, '', FALSE);
+      if (!class_exists('rcube_db')) {
+          $db = new rcube_mdb2($dsn, '', FALSE);
+      } else {
+          $db = rcube_db::factory($dsn, '', FALSE);    
+      }
+
       $db->set_debug((bool)$rcmail->config->get('sql_debug'));
       $db->db_connect('r');
     } else {
@@ -194,7 +203,12 @@ class pfadmin_forwarding extends rcube_plugin
     $ret = $db->fetch_assoc($res);
     if (!$rcmail->config->get('db_persistent')) {
       if ($dsn = $rcmail->config->get('db_dsnw')) {
-        $rcmail->db = new rcube_mdb2($dsn, '', FALSE);    
+        if (!class_exists('rcube_db')) {
+           $rcmail->db = new rcube_mdb2($dsn, '', FALSE);    
+         } else {
+           $rcmail->db = rcube_db::factory($dsn, '', FALSE);    
+        }
+
       }
     }
     return $ret;  
@@ -205,7 +219,11 @@ class pfadmin_forwarding extends rcube_plugin
     $cfg = rcmail::get_instance()->config;
     
     if ($dsn = $cfg->get('db_pfadmin_forwarding_dsn')) {
-      $db = new rcube_mdb2($dsn, '', FALSE);
+      if (!class_exists('rcube_db')) {
+          $db = new rcube_mdb2($dsn, '', FALSE);
+      } else {
+          $db = rcube_db::factory($dsn, '', FALSE);    
+      }
       $db->set_debug((bool)$cfg->get('sql_debug'));
       $db->db_connect('w');
     } else {
